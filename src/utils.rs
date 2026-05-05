@@ -64,9 +64,13 @@ pub(crate) fn calc_hash_u16(utf16_file_name: &[u16]) -> u16 {
 
     for byte in utf16_file_name
         .iter()
-        .flat_map(|x| vec![(x & 0xFF) as u8, (x >> 8) as u8])
+        .flat_map(|&x| [(x & 0xFF) as u8, (x >> 8) as u8])
     {
-        hash = if hash & 1 > 0 { 0x8000 } else { 0 } + hash.wrapping_shr(1) + byte as u16;
+        let addend = if hash & 1 != 0 { 0x8000 } else { 0 };
+        hash = hash
+            .wrapping_shr(1)
+            .wrapping_add(addend)
+            .wrapping_add(byte as u16);
     }
 
     hash
